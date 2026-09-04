@@ -19,3 +19,19 @@ fn parse_test_files() {
         }
     }
 }
+
+// An unknown input type is an error, not a panic: shader collections are full
+// of types no one has heard of, and one of them must not take the host down.
+#[test]
+fn unknown_input_type_is_an_error() {
+    let src = r#"/*{ "INPUTS": [ { "NAME": "x", "TYPE": "spline" } ] }*/"#;
+    assert!(isf::parse(src).is_err());
+}
+
+// MadMapper writes `int` where the spec says `long`.
+#[test]
+fn int_is_read_as_long() {
+    let src = r#"/*{ "INPUTS": [ { "NAME": "x", "TYPE": "int", "DEFAULT": 5 } ] }*/"#;
+    let isf = isf::parse(src).unwrap();
+    assert!(matches!(isf.inputs[0].ty, isf::InputType::Long(_)));
+}

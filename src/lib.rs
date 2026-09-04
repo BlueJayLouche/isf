@@ -321,7 +321,8 @@ impl<'de> Deserialize<'de> for Input {
                 },
             }),
 
-            "long" => InputType::Long(InputLong {
+            // `int` is not in the spec, but MadMapper and its shaders write it.
+            "long" | "int" => InputType::Long(InputLong {
                 input_values: InputValues::from_opts(default, min, max, identity)
                     .map_err(serde::de::Error::custom)?,
                 values,
@@ -363,7 +364,11 @@ impl<'de> Deserialize<'de> for Input {
                 },
             }),
 
-            _ => unimplemented!(), // TODO: Return serde err "unknown type".
+            other => {
+                return Err(serde::de::Error::custom(format!(
+                    "unknown input type `{other}`"
+                )));
+            }
         };
 
         Ok(Input { name, label, ty })
